@@ -81,9 +81,9 @@ export function createController(canvas, opts = {}) {
     canvas.addEventListener("mouseup", up);
     canvas.addEventListener("touchend", up);
   
-    canvas.addEventListener("orientationchange", onScreenOrientation);
-    canvas.addEventListener("deviceorientation", onDeviceOrientation);
-    canvas.addEventListener("devicemotion", onDeviceMotion);
+    window.addEventListener("orientationchange", onScreenOrientation);
+    window.addEventListener("deviceorientation", onDeviceOrientation);
+    window.addEventListener("devicemotion", onDeviceMotion);
   
     const setObjectQuaternion = function () {
   
@@ -271,9 +271,9 @@ export function createController(canvas, opts = {}) {
       canvas.removeEventListener("mouseup", up);
       canvas.removeEventListener("touchend", up);
   
-      canvas.removeEventListener("orientationchange", onScreenOrientation);
-      canvas.removeEventListener("deviceorientation", onDeviceOrientation);
-      canvas.removeEventListener("devicemotion", onDeviceMotion);
+      window.removeEventListener("orientationchange", onScreenOrientation);
+      window.removeEventListener("deviceorientation", onDeviceOrientation);
+      window.removeEventListener("devicemotion", onDeviceMotion);
       
     }
   }
