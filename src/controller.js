@@ -72,18 +72,18 @@ export function createController(canvas, opts = {}) {
       update
     };
   
-    window.addEventListener("mousemove", move);
-    window.addEventListener("touchmove", move, { passive: false });
+    canvas.addEventListener("mousemove", move);
+    canvas.addEventListener("touchmove", move, { passive: false });
   
-    window.addEventListener("mousedown", down);
-    window.addEventListener("touchstart", down);
+    canvas.addEventListener("mousedown", down);
+    canvas.addEventListener("touchstart", down);
   
-    window.addEventListener("mouseup", up);
-    window.addEventListener("touchend", up);
+    canvas.addEventListener("mouseup", up);
+    canvas.addEventListener("touchend", up);
   
-    window.addEventListener("orientationchange", onScreenOrientation);
-    window.addEventListener("deviceorientation", onDeviceOrientation);
-    window.addEventListener("devicemotion", onDeviceMotion);
+    canvas.addEventListener("orientationchange", onScreenOrientation);
+    canvas.addEventListener("deviceorientation", onDeviceOrientation);
+    canvas.addEventListener("devicemotion", onDeviceMotion);
   
     const setObjectQuaternion = function () {
   
@@ -262,18 +262,18 @@ export function createController(canvas, opts = {}) {
   
     function dispose() {
       
-      window.removeEventListener("mousemove", move);
-      window.removeEventListener("touchmove", move);
+      canvas.removeEventListener("mousemove", move);
+      canvas.removeEventListener("touchmove", move);
   
-      window.removeEventListener("mousedown", down);
-      window.removeEventListener("touchstart", down);
+      canvas.removeEventListener("mousedown", down);
+      canvas.removeEventListener("touchstart", down);
   
-      window.removeEventListener("mouseup", up);
-      window.removeEventListener("touchend", up);
+      canvas.removeEventListener("mouseup", up);
+      canvas.removeEventListener("touchend", up);
   
-      window.removeEventListener("orientationchange", onScreenOrientation);
-      window.removeEventListener("deviceorientation", onDeviceOrientation);
-      window.removeEventListener("devicemotion", onDeviceMotion);
+      canvas.removeEventListener("orientationchange", onScreenOrientation);
+      canvas.removeEventListener("deviceorientation", onDeviceOrientation);
+      canvas.removeEventListener("devicemotion", onDeviceMotion);
       
     }
   }

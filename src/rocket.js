@@ -238,10 +238,13 @@ const sketch = ({ context, time }) => {
   paletteTexture.minFilter = THREE.NearestFilter;
   paletteTexture.magFilter = THREE.NearestFilter;
   
-  let rockets = [];
-  let loader = new THREE.GLTFLoader();
+  const planets = []
+  const rockets = [];
+  const loader = new THREE.GLTFLoader();
   loader.load( 'gltf/rocket.gltf', (gltf) => {
+
     gltf.scene.traverse( (child) => {
+
       if (child.isMesh) {
         let rocket = new THREE.Mesh(
           child.geometry,
@@ -265,8 +268,16 @@ const sketch = ({ context, time }) => {
         scene.add(rocket);
         scene.add(rocket.trail);
         rockets.push(rocket);
+
       }
     })
+
+    // Only add planets once rocket is loaded, so the timing is synced
+    for (let i = 0; i < planetPositions.length; i += 2) {
+      const planet = new Planet(s.planetSpacing * planetPositions[i], planetPositions[i+1], i);
+      planets.push(planet);
+      scene.add(planet);
+    }
   });
   
   class Marker extends THREE.Mesh {
@@ -362,24 +373,6 @@ const sketch = ({ context, time }) => {
     }
   }
 
-  const planets = []
-  for (let i = 0; i < planetPositions.length; i += 2) {
-    const planet = new Planet(s.planetSpacing * planetPositions[i], planetPositions[i+1], i);
-    planets.push(planet);
-    scene.add(planet);
-  }
-
-  const pathMovement = (x, freq=1.0, amp=1.0, offset=0.0) => {
-    const sin = Math.sin(freq * x + offset);
-    return sin * amp * 2. * (1. - (amp/2) * Math.abs(sin));
-  }
-
-  const pathRotation = (x, freq=1.0, amp=1.0, offset=0.0) => {
-    const rot = pathMovement(x+.66/freq, freq, amp, offset)
-                 - pathMovement(x-.33/freq, freq, amp, offset);
-    return rot;
-  }
-  
   class Path { 
     constructor ( amplitude, frequency, wobble ) {
       this.amplitude = amplitude;
