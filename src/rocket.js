@@ -41,9 +41,10 @@ const sketch = ({ context, time }) => {
       shrinkRate: 0.006,
     },
     debugMode: false,
+    timeSinceLastButtonPress: 0,
   }
 
-  let timeValues = {
+  const timeValues = {
     time: 0,
     previous: 0,
     delta: 0,
@@ -594,14 +595,26 @@ const sketch = ({ context, time }) => {
         if ( controller.pointer.isPressed ) {
 
           s.speed.normalised +=
-            ( 1 - s.speed.normalised )
-            * ( 1 - s.speed.normalised )
-            * 0.05;
+          ( 1 - s.speed.normalised )
+          * ( 1 - s.speed.normalised )
+          * 0.05;
+          
+          s.timeSinceLastButtonPress = 0;
   
         } else {
   
-          s.speed.normalised *= 0.995;
-  
+          s.timeSinceLastButtonPress += timeValues.delta;
+
+          if ( s.timeSinceLastButtonPress > 14 && s.speed.normalised < 0.5 ) {
+
+            s.speed.normalised += 0.001;
+
+          } else {
+
+            s.speed.normalised *= 0.995;
+
+          }
+
         }
 
         s.speed.normalised = Math.min(1, Math.max(0, s.speed.normalised));
@@ -612,9 +625,6 @@ const sketch = ({ context, time }) => {
 
       rockets.forEach((rocket) => {
         
-
-
-
         rocket.paths.xRot.SetMultiplier( s.speed.value / s.planetSpacing );
         rocket.paths.y.SetMultiplier( s.speed.value / s.planetSpacing );
         rocket.paths.z.SetMultiplier( s.speed.value / s.planetSpacing );
