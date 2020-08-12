@@ -589,7 +589,7 @@ const sketch = ({ context, time }) => {
       renderer.setPixelRatio(pixelRatio);
       renderer.setSize(viewportWidth, viewportHeight, false);
       camera.aspect = viewportWidth / viewportHeight;
-      camera.zoom = 0.6 + Math.abs ( 1 - viewportWidth / viewportHeight );
+      camera.zoom = 0.82 * Math.sqrt ( Math.abs ( viewportWidth / viewportHeight ) );
       camera.updateProjectionMatrix();
     },
 
