@@ -38,7 +38,12 @@ const sketch = ({ context, time }) => {
       // maxLength: 1.85 * Math.PI,
       startRadius: 0.13,
       maxRadius: 0.26,
-      shrinkRate: 0.006,
+      shrinkRate: {
+        normalised: 0.5,
+        value: 0.006,
+        min: 0.002,
+        max: 0.012,
+      },
     },
     debugMode: false,
     timeSinceLastButtonPress: 0,
@@ -419,7 +424,7 @@ const sketch = ({ context, time }) => {
   })
 
   class TrailCircle extends THREE.Mesh {
-    constructor(x, y, z, r) {
+    constructor(x, y, z, r, shrinkRate) {
       super(circleGeo,trailMaterial);
       this.r = r;
       this.position.set(x, y, z);
@@ -428,6 +433,26 @@ const sketch = ({ context, time }) => {
       this.scale.set(r, r, r);
       this.visible = s.debugMode;
       this.age = 0;
+      this.shrinkRate = shrinkRate;
+
+    }
+
+    Shrink() {
+
+      if ( this.r < this.shrinkRate ) {
+        this.r = 0;
+      } else { 
+        this.r -= this.shrinkRate;
+      }
+
+    }
+    
+    Update() {
+      
+      this.scale.setScalar(this.r);
+      // MatrixWorld must be updated before trail.FitToCircles
+      this.updateMatrixWorld();
+
     }
   }
 
@@ -452,8 +477,15 @@ const sketch = ({ context, time }) => {
       let circleSpacing = this.userData.maxLength / (this.userData.axialResolution - 1);
 
       for (let i = 0; i < this.userData.axialResolution; i++) {
-        this.circles[i] = new TrailCircle(i * circleSpacing, 0, 0, this.userData.startRadius);
+
+        this.circles[i] = new TrailCircle(
+          i * circleSpacing, 0, 0,
+          this.userData.startRadius,
+          this.userData.shrinkRate.value
+        );
+
         scene.add(this.circles[i]);
+
       }
 
       this.leader = this.circles[0];
@@ -493,25 +525,17 @@ const sketch = ({ context, time }) => {
           );
 
           thisCircle.r = targetCircle.r;
+          thisCircle.shrinkRate = targetCircle.shrinkRate;
+
         }
 
         if ( i > 0 ) {
           thisCircle.position.x += speed;
-          if ( thisCircle.r < this.userData.shrinkRate ) {
-            thisCircle.r = 0;
-          } else { 
-            thisCircle.r -= this.userData.shrinkRate;
-          }
+          thisCircle.Shrink();
         }
         
-        thisCircle.scale.set(
-          thisCircle.r,
-          thisCircle.r,
-          thisCircle.r
-        )
+        thisCircle.Update();
         
-        // MatrixWorld must be updated for FitToCircles
-        thisCircle.updateMatrixWorld();
       }
       
       if ( endTrigger ) {
@@ -565,6 +589,7 @@ const sketch = ({ context, time }) => {
       renderer.setPixelRatio(pixelRatio);
       renderer.setSize(viewportWidth, viewportHeight, false);
       camera.aspect = viewportWidth / viewportHeight;
+      camera.zoom = 0.6 + Math.abs ( 1 - viewportWidth / viewportHeight );
       camera.updateProjectionMatrix();
     },
 
@@ -599,27 +624,38 @@ const sketch = ({ context, time }) => {
           * ( 1 - s.speed.normalised )
           * 0.05;
           
+          s.trailSettings.shrinkRate.normalised = ( 1 - s.speed.normalised );
+          
           s.timeSinceLastButtonPress = 0;
   
         } else {
   
           s.timeSinceLastButtonPress += timeValues.delta;
 
-          if ( s.timeSinceLastButtonPress > 14 && s.speed.normalised < 0.5 ) {
+          if ( s.timeSinceLastButtonPress > 14 ) {
 
-            s.speed.normalised += 0.001;
+            // Resume normal speed after period of inactivity
+            s.speed.normalised = Math.min( 0.5, s.speed.normalised + 0.001 );
+            s.trailSettings.shrinkRate.normalised = ( 1 - s.speed.normalised );
 
           } else {
 
             s.speed.normalised *= 0.995;
+            s.trailSettings.shrinkRate.normalised += 1.0;
 
           }
 
         }
 
         s.speed.normalised = Math.min(1, Math.max(0, s.speed.normalised));
+        s.trailSettings.shrinkRate.normalised = Math.min(1, Math.max(0, s.trailSettings.shrinkRate.normalised));
         const sp = sineWaveMap(s.speed.normalised, 0, 1, 3 * Math.PI/2, 5 * Math.PI/2, true);
         s.speed.value = s.speed.min + sp * ( s.speed.max - s.speed.min );
+
+        s.trailSettings.shrinkRate.value = 
+          s.trailSettings.shrinkRate.min
+          + s.trailSettings.shrinkRate.normalised
+            * ( s.trailSettings.shrinkRate.max - s.trailSettings.shrinkRate.min );
 
       }
 
@@ -653,6 +689,8 @@ const sketch = ({ context, time }) => {
           0,
         );
         
+        rocket.trail.leader.shrinkRate = s.trailSettings.shrinkRate.value;
+
         rocket.trail.leader.updateMatrixWorld();
 
         // TODO remove the need for this magic number
