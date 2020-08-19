@@ -42,7 +42,7 @@ const sketch = ({ context, time }) => {
         normalised: 0.5,
         value: 0.006,
         min: 0.002,
-        max: 0.012,
+        max: 0.024,
       },
     },
     debugMode: false,
@@ -423,6 +423,13 @@ const sketch = ({ context, time }) => {
     wireframe: s.debugMode
   })
 
+  let safeSpawnPoint = -2 * Math.PI;
+
+  const sphereMesh = new THREE.Mesh(
+    sphereGeo, trailMaterial);
+  sphereMesh.position.setX(safeSpawnPoint);
+  scene.add(sphereMesh);
+
   class TrailCircle extends THREE.Mesh {
     constructor(x, y, z, r, shrinkRate) {
       super(circleGeo,trailMaterial);
@@ -641,7 +648,7 @@ const sketch = ({ context, time }) => {
           } else {
 
             s.speed.normalised *= 0.995;
-            s.trailSettings.shrinkRate.normalised += 1.0;
+            s.trailSettings.shrinkRate.normalised += 0.1;
 
           }
 
